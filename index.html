@@ -44,12 +44,7 @@ body{font-family:var(--font-sans)}
     <button class="tool-btn" onclick="clearTray()"><i class="ti ti-trash"></i> Clear</button>
     <button class="tool-btn" id="draw-toggle" onclick="toggleDrawMode()">✏️ Draw</button>
   </div>
-  <div id="main">
-    <div id="palette"></div>
-    <div id="tray-wrap">
-      <div id="tray">
-        <canvas id="draw-canvas"></canvas>
-<div id="draw-toolbar">
+  <div id="draw-toolbar">
   <label>Colour</label>
   <div class="color-swatch active" style="background:#3d2b1f" onclick="setColor('#3d2b1f',this)" title="Dark brown"></div>
   <div class="color-swatch" style="background:#1a5c2e" onclick="setColor('#1a5c2e',this)" title="Green"></div>
@@ -64,6 +59,11 @@ body{font-family:var(--font-sans)}
   <button class="size-btn" id="sz-l" onclick="setSize(14,this)">L</button>
   <button class="size-btn" style="margin-left:8px" onclick="setEraser()">⌫ Erase</button>
   <button class="size-btn" onclick="clearDrawing()">✕ Clear drawing</button>
+  <div id="main">
+    <div id="palette"></div>
+    <div id="tray-wrap">
+      <div id="tray">
+        <canvas id="draw-canvas"></canvas>
 </div>
         <div id="tray-hint"><span>Click any item from the left to place it on the tray</span></div>
       </div>
@@ -218,9 +218,12 @@ function setSize(s, el) {
   document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
   if(el) el.classList.add('active');
 }
-
 function setEraser() {
   erasing = true;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+}
 }
 
 function clearDrawing() {
