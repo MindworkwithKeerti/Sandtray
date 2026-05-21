@@ -1,0 +1,152 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+#app{display:flex;flex-direction:column;height:100vh;min-height:640px;padding:0}
+#toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);flex-shrink:0}
+#toolbar h1{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1}
+.tool-btn{display:flex;align-items:center;gap:4px;padding:5px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:12px;cursor:pointer}
+.tool-btn:hover{background:var(--color-background-secondary)}
+.tool-btn i{font-size:14px}
+#main{display:flex;flex:1;overflow:hidden}
+#palette{width:230px;flex-shrink:0;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);overflow-y:auto;padding:8px 0}
+.cat-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:10px 12px 4px}
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;padding:0 6px 6px}
+.mini{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid transparent;user-select:none}
+.mini:hover{background:var(--color-background-secondary);border-color:var(--color-border-secondary)}
+#tray-wrap{flex:1;position:relative;overflow:hidden}
+#tray{width:100%;height:100%;position:relative;background:#e8d5a3;background-image:radial-gradient(circle at 30% 40%, #dfc99a 0%, transparent 50%),radial-gradient(circle at 70% 60%, #d4b882 0%, transparent 40%),radial-gradient(circle at 50% 80%, #c9a96e 0%, transparent 30%)}
+#tray-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#tray-hint span{font-size:13px;color:rgba(120,90,40,0.45);font-style:italic}
+.placed{position:absolute;font-size:30px;cursor:grab;user-select:none;transform:translate(-50%,-50%);line-height:1}
+.placed:active{cursor:grabbing}
+.placed .del{display:none;position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#e24b4a;border-radius:50%;font-size:10px;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:10}
+.placed:hover .del{display:flex}
+#count-badge{font-size:11px;color:var(--color-text-tertiary)}
+</style>
+
+<h2 class="sr-only">Virtual sand tray for play therapy sessions</h2>
+<div id="app">
+  <div id="toolbar">
+    <i class="ti ti-circles-relation" style="font-size:18px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+    <h1>Sand Tray</h1>
+    <span id="count-badge"></span>
+    <button class="tool-btn" onclick="clearTray()"><i class="ti ti-trash"></i> Clear</button>
+  </div>
+  <div id="main">
+    <div id="palette"></div>
+    <div id="tray-wrap">
+      <div id="tray">
+        <div id="tray-hint"><span>Click any item from the left to place it on the tray</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cats = [
+  {label:"People",items:["👶","🧒","👦","👧","🧑","👨","👩","🧓","👴","👵","🤰","🤱","🦸","💂","👮","🧑‍🚒","🧙","👼","👹","👺","👻","🤖","🪆","🤴","👸","👑","👨‍⚖️","🪖","🙍","🧍","🚶","🏃","🧎","🤺","🧞","🧜"]},
+  {label:"Together",items:["👫","👬","👭","👨‍👩‍👦","👨‍👩‍👧","👨‍👩‍👧‍👦","👩‍👦","👨‍👦","👩‍👧","👨‍👧","💑","💏","🤝","🤗","🫂","❤️","💔","❤️‍🩹","❤️‍🔥","💞","💗"]},
+  {label:"Animals",items:["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🦄","🐲","🐉","🦖","🦕","🐺","🐗","🐴","🦓","🦌","🦒","🐘","🦏","🐪","🦥","🐢","🐍","🦎","🦅","🦉","🐦","🦋","🐛","🐝","🦂","🦈","🐋","🐬","🐟","🐙","🪺","🥚","🐣","🐕","🐈","🩹"]},
+  {label:"Places",items:["🏠","🏡","🏚️","🏰","🏯","⛩️","🕌","⛪","🏛️","🛖","🏕️","🚪","🪟","🪑","🛏️","🛌","🚧","🧱","🌉","⚰️","🪦","🪧","🛤️","🛣️","🏟️","🏗️","🗽","🏥"]},
+  {label:"Nature",items:["🌳","🌲","🌴","🌵","🌱","🌿","☘️","🍀","🍂","🍃","🌾","🪴","🌷","🌹","🥀","🌻","🌼","🌸","💐","🏔️","⛰️","🗻","🏜️","🏖️","🏝️","🏞️","🌊","💧","💦"]},
+  {label:"Weather",items:["☀️","🌤️","⛅","🌥️","☁️","🌧️","⛈️","🌩️","🌨️","🌪️","🌫️","🌈","🌑","🌕","🌟","⭐","💫","✨","🔥","🌋","❄️","🧊","⚡","☄️","🌬️"]},
+  {label:"Objects",items:["🔑","🗝️","🔒","🔓","🔐","⛓️","🪤","🛡️","⚔️","🗡️","🏹","🔫","💣","💥","☂️","🌂","🪞","🎭","🎈","🪅","🧩","📦","🎁","💰","💎","🕯️","🔦","🪔","📷","🖼️","✉️","📜","📖","🗺️","🧭","⏳","⚓","⛵","🚣","⛴️","🛶","🧸","🪆","🩹","🩼","🩸"]},
+  {label:"Faces & Signs",items:["😊","😢","😭","😔","😡","😰","😱","😶","🥺","😤","😌","😴","🤔","🫣","🤐","😨","😞","😟","👁️","👀","👊","✊","🙏","💭","💤","🚫","⚠️","❗","❓","🎯","🌀","♾️"]}
+];
+
+const palette = document.getElementById('palette');
+const tray = document.getElementById('tray');
+const hint = document.getElementById('tray-hint');
+const countBadge = document.getElementById('count-badge');
+let itemCount = 0;
+
+cats.forEach(cat => {
+  const label = document.createElement('div');
+  label.className = 'cat-label';
+  label.textContent = cat.label;
+  palette.appendChild(label);
+  const grid = document.createElement('div');
+  grid.className = 'cat-grid';
+  cat.items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'mini';
+    el.textContent = item;
+    el.onclick = () => placeItem(item);
+    grid.appendChild(el);
+  });
+  palette.appendChild(grid);
+});
+
+function placeItem(emoji) {
+  hint.style.display = 'none';
+  itemCount++;
+  countBadge.textContent = itemCount + ' placed';
+  const x = 20 + Math.random() * 60;
+  const y = 20 + Math.random() * 60;
+  const el = document.createElement('div');
+  el.className = 'placed';
+  el.style.left = x + '%';
+  el.style.top = y + '%';
+  const span = document.createElement('span');
+  span.textContent = emoji;
+  const del = document.createElement('div');
+  del.className = 'del';
+  del.innerHTML = '×';
+  del.onclick = (e) => { e.stopPropagation(); el.remove(); itemCount--; countBadge.textContent = itemCount > 0 ? itemCount + ' placed' : ''; if(tray.querySelectorAll('.placed').length===0) hint.style.display='flex'; };
+  el.appendChild(span);
+  el.appendChild(del);
+  makeDraggable(el);
+  tray.appendChild(el);
+}
+
+function makeDraggable(el) {
+  let ox, oy, dragging = false;
+  el.addEventListener('mousedown', e => {
+    if(e.target.classList.contains('del')) return;
+    dragging = true;
+    const elRect = el.getBoundingClientRect();
+    ox = e.clientX - elRect.left - elRect.width/2;
+    oy = e.clientY - elRect.top - elRect.height/2;
+    el.style.zIndex = 1000;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    const rect = tray.getBoundingClientRect();
+    const nx = (e.clientX - rect.left - ox) / rect.width * 100;
+    const ny = (e.clientY - rect.top - oy) / rect.height * 100;
+    el.style.left = Math.min(98, Math.max(2, nx)) + '%';
+    el.style.top = Math.min(98, Math.max(2, ny)) + '%';
+  });
+  document.addEventListener('mouseup', () => {
+    if(dragging){ dragging = false; el.style.zIndex = ''; }
+  });
+  el.addEventListener('touchstart', e => {
+    if(e.target.classList.contains('del')) return;
+    dragging = true;
+    const t = e.touches[0];
+    const elRect = el.getBoundingClientRect();
+    ox = t.clientX - elRect.left - elRect.width/2;
+    oy = t.clientY - elRect.top - elRect.height/2;
+    e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchmove', e => {
+    if(!dragging) return;
+    const t = e.touches[0];
+    const rect = tray.getBoundingClientRect();
+    const nx = (t.clientX - rect.left - ox) / rect.width * 100;
+    const ny = (t.clientY - rect.top - oy) / rect.height * 100;
+    el.style.left = Math.min(98, Math.max(2, nx)) + '%';
+    el.style.top = Math.min(98, Math.max(2, ny)) + '%';
+  },{passive:false});
+  document.addEventListener('touchend', () => { dragging = false; });
+}
+
+function clearTray() {
+  tray.querySelectorAll('.placed').forEach(e => e.remove());
+  itemCount = 0;
+  countBadge.textContent = '';
+  hint.style.display = 'flex';
+}
+</script>
