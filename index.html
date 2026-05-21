@@ -1,86 +1,107 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Sand Tray</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans)}
-#app{display:flex;flex-direction:column;height:100vh;min-height:640px;padding:0}
-#toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);flex-shrink:0}
-#toolbar h1{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1}
-.tool-btn{display:flex;align-items:center;gap:4px;padding:5px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:12px;cursor:pointer}
-.tool-btn:hover{background:var(--color-background-secondary)}
-.tool-btn i{font-size:14px}
-#main{display:flex;flex:1;overflow:hidden}
-#palette{width:230px;flex-shrink:0;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);overflow-y:auto;padding:8px 0}
-.cat-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:10px 12px 4px}
-.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;padding:0 6px 6px}
-.mini{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border-radius:var(--border-radius-md);border:0.5px solid transparent;user-select:none}
-.mini:hover{background:var(--color-background-secondary);border-color:var(--color-border-secondary)}
-#tray-wrap{flex:1;position:relative;overflow:hidden}
-#tray{width:100%;height:100%;position:relative;background:#e8d5a3;background-image:radial-gradient(circle at 30% 40%, #dfc99a 0%, transparent 50%),radial-gradient(circle at 70% 60%, #d4b882 0%, transparent 40%),radial-gradient(circle at 50% 80%, #c9a96e 0%, transparent 30%)}
-#tray-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-#tray-hint span{font-size:13px;color:rgba(120,90,40,0.45);font-style:italic}
-.placed{position:absolute;font-size:30px;cursor:grab;user-select:none;transform:translate(-50%,-50%);line-height:1}
-.placed:active{cursor:grabbing}
-.placed .del{display:none;position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#e24b4a;border-radius:50%;font-size:10px;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:10}
-.placed:hover .del{display:flex}
-#count-badge{font-size:11px;color:var(--color-text-tertiary)}
-#draw-toolbar{display:none;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid #e0d8c8;background:#faf7f2;flex-wrap:wrap}
-#draw-toolbar label{font-size:12px;color:#888;margin-right:2px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";background:#f7f5f0;color:#2d2d2d}
+#app{display:flex;flex-direction:column;height:100vh;width:100vw}
+#toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #e0d8c8;background:#fff;flex-shrink:0}
+#toolbar h1{font-size:14px;font-weight:500;color:#2d2d2d;flex:1}
+#count-badge{font-size:12px;color:#999}
+.tool-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border:1px solid #d8d2c4;border-radius:6px;background:#fff;color:#555;font-size:13px;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.tool-btn:hover{background:#f5f1ea;border-color:#b8a070}
+.tool-btn:active{transform:scale(0.97)}
+.tool-btn.active{background:#e8d5a3;border-color:#b8a070;color:#5c3d1e}
+#draw-toolbar{display:none;align-items:center;gap:5px;padding:7px 14px;border-bottom:1px solid #e0d8c8;background:#faf7f2;flex-shrink:0;flex-wrap:wrap}
+#draw-toolbar label{font-size:11px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-right:2px}
 .color-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:transform 0.1s}
 .color-swatch:hover{transform:scale(1.15)}
-.color-swatch.active{border-color:#555;transform:scale(1.15)}
-.size-btn{padding:4px 8px;border:1px solid #d8d2c4;border-radius:5px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit}
-.size-btn.active,.size-btn:hover{background:#e8d5a3;border-color:#b8a070}
-#custom-color{width:28px;height:28px;border-radius:50%;border:2px solid #d8d2c4;cursor:pointer;padding:0;overflow:hidden}
-#draw-toggle.active{background:#e8d5a3;border-color:#b8a070;color:#5c3d1e}
+.color-swatch.active{border-color:#444;transform:scale(1.15)}
+.size-btn{padding:3px 9px;border:1px solid #d8d2c4;border-radius:5px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit;transition:all 0.1s}
+.size-btn:hover,.size-btn.active{background:#e8d5a3;border-color:#b8a070}
+#custom-color{width:26px;height:26px;border-radius:50%;border:2px solid #d8d2c4;cursor:pointer;padding:0;background:none}
+#draw-toolbar .sep{width:1px;height:20px;background:#e0d8c8;margin:0 4px;flex-shrink:0}
+#main{display:flex;flex:1;overflow:hidden}
+#palette{width:230px;flex-shrink:0;border-right:1px solid #e0d8c8;background:#fff;overflow-y:auto;padding:6px 0}
+#palette::-webkit-scrollbar{width:6px}
+#palette::-webkit-scrollbar-thumb{background:#d8d2c4;border-radius:3px}
+.cat-label{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;padding:10px 13px 4px;position:sticky;top:0;background:#fff;z-index:1}
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;padding:0 7px 7px}
+.mini{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:21px;cursor:pointer;border-radius:6px;border:1px solid transparent;user-select:none;transition:all 0.1s}
+.mini:hover{background:#f5f1ea;border-color:#d8d2c4;transform:scale(1.1)}
+.mini:active{transform:scale(0.95)}
+#tray-wrap{flex:1;position:relative;overflow:hidden;padding:14px;background:#ede8dc}
+#tray{width:100%;height:100%;position:relative;border-radius:14px;background:#e8d5a3;background-image:radial-gradient(circle at 25% 35%,#e2cc97 0%,transparent 45%),radial-gradient(circle at 75% 65%,#d4b882 0%,transparent 40%),radial-gradient(circle at 50% 85%,#c9a96e 0%,transparent 35%);box-shadow:inset 0 0 40px rgba(160,120,60,0.12);overflow:hidden}
 #draw-canvas{position:absolute;inset:0;border-radius:14px;z-index:2;pointer-events:none;touch-action:none}
+#tray-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:8px;z-index:1}
+#tray-hint .hi{font-size:28px;opacity:0.3}
+#tray-hint span{font-size:13px;color:rgba(110,80,40,0.45);font-style:italic}
+.placed{position:absolute;font-size:32px;cursor:grab;user-select:none;transform:translate(-50%,-50%);line-height:1;z-index:3}
+.placed:hover{filter:drop-shadow(0 2px 6px rgba(60,40,10,0.35))}
+.placed:active{cursor:grabbing}
+.placed .del{display:none;position:absolute;top:-9px;right:-9px;width:17px;height:17px;background:#d04545;border-radius:50%;font-size:13px;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-weight:600;line-height:1}
+.placed:hover .del{display:flex}
+@media(max-width:700px){#palette{width:170px}.cat-grid{grid-template-columns:repeat(4,1fr)}.mini{font-size:19px}.placed{font-size:28px}}
+@media(max-width:480px){#palette{width:130px}.cat-grid{grid-template-columns:repeat(3,1fr)}.mini{font-size:18px}#tray-wrap{padding:8px}}
 </style>
-
-<h2 class="sr-only">Virtual Sand Tray </h2>
+</head>
+<body>
 <div id="app">
+
   <div id="toolbar">
-    <i class="ti ti-circles-relation" style="font-size:18px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
     <h1>Sand Tray</h1>
     <span id="count-badge"></span>
-    <button class="tool-btn" onclick="clearTray()"><i class="ti ti-trash"></i> Clear</button>
     <button class="tool-btn" id="draw-toggle" onclick="toggleDrawMode()">✏️ Draw</button>
+    <button class="tool-btn" onclick="clearTray()">↻ Clear</button>
   </div>
+
   <div id="draw-toolbar">
-  <label>Colour</label>
-  <div class="color-swatch active" style="background:#3d2b1f" onclick="setColor('#3d2b1f',this)" title="Dark brown"></div>
-  <div class="color-swatch" style="background:#1a5c2e" onclick="setColor('#1a5c2e',this)" title="Green"></div>
-  <div class="color-swatch" style="background:#1a3a6b" onclick="setColor('#1a3a6b',this)" title="Blue"></div>
-  <div class="color-swatch" style="background:#6b1a1a" onclick="setColor('#6b1a1a',this)" title="Red"></div>
-  <div class="color-swatch" style="background:#888" onclick="setColor('#888888',this)" title="Grey"></div>
-  <div class="color-swatch" style="background:#f5f0e0" onclick="setColor('#f5f0e0',this)" title="Light"></div>
-  <input type="color" id="custom-color" value="#3d2b1f" onchange="setColor(this.value,null)" title="Custom colour">
-  <label style="margin-left:8px">Size</label>
-  <button class="size-btn active" id="sz-s" onclick="setSize(3,this)">S</button>
-  <button class="size-btn" id="sz-m" onclick="setSize(7,this)">M</button>
-  <button class="size-btn" id="sz-l" onclick="setSize(14,this)">L</button>
-  <button class="size-btn" style="margin-left:8px" onclick="setEraser()">⌫ Erase</button>
-  <button class="size-btn" onclick="clearDrawing()">✕ Clear drawing</button>
+    <label>Colour</label>
+    <div class="color-swatch active" style="background:#3d2b1f" onclick="setColor('#3d2b1f',this)"></div>
+    <div class="color-swatch" style="background:#1a5c2e" onclick="setColor('#1a5c2e',this)"></div>
+    <div class="color-swatch" style="background:#1a3a6b" onclick="setColor('#1a3a6b',this)"></div>
+    <div class="color-swatch" style="background:#6b1a1a" onclick="setColor('#6b1a1a',this)"></div>
+    <div class="color-swatch" style="background:#777" onclick="setColor('#777777',this)"></div>
+    <div class="color-swatch" style="background:#e8d5a3;border:2px solid #ccc" onclick="setColor('#e8d5a3',this)"></div>
+    <input type="color" id="custom-color" value="#3d2b1f" title="Custom colour" oninput="setColor(this.value,null)">
+    <div class="sep"></div>
+    <label>Size</label>
+    <button class="size-btn active" onclick="setSize(3,this)">S</button>
+    <button class="size-btn" onclick="setSize(7,this)">M</button>
+    <button class="size-btn" onclick="setSize(14,this)">L</button>
+    <div class="sep"></div>
+    <button class="size-btn" id="erase-btn" onclick="setEraser(this)">⌫ Erase</button>
+    <button class="size-btn" onclick="clearDrawing()">✕ Clear drawing</button>
+  </div>
+
   <div id="main">
     <div id="palette"></div>
     <div id="tray-wrap">
       <div id="tray">
         <canvas id="draw-canvas"></canvas>
-</div>
-        <div id="tray-hint"><span>Click any item from the left to place it on the tray</span></div>
+        <div id="tray-hint">
+          <div class="hi">✦</div>
+          <span>Click any item on the left to place it here</span>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
+</div>
 <script>
 const cats = [
-  {label:"People",items:["👶","🧒","👦","👧","🧑","👨","👩","🧓","👴","👵","🤰","🤱","🦸","💂","👮","🧑‍🚒","🧙","👼","👹","👺","👻","🤖","🪆","🤴","👸","👑","👨‍⚖️","🪖","🙍","🧍","🧍‍♀️","🚶","🏃","🧎","🤺","🧞","🧜"]},
-  {label:"Together",items:["👫","👬","👭","👨‍👩‍👦","👨‍👩‍👧","👨‍👩‍👧‍👦","👩‍👦","👨‍👦","👩‍👧","👨‍👧","💑","💏","🤝","🤗","🫂","❤️","💔","❤️‍🩹","❤️‍🔥","💞","💗"]},
-  {label:"Animals",items:["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🦄","🐲","🐉","🦖","🦕","🐺","🐗","🐴","🦓","🦌","🦒","🐘","🦏","🐪","🦥","🐢","🐍","🦎","🦅","🦉","🐦","🦋","🐛","🐝","🦂","🦈","🐋","🐬","🐟","🐙","🪺","🥚","🐣","🐕","🐈","🩹"]},
-{label:"Places",items:["🏠","🏡","🏚️","🏰","🏯","⛩️","🕌","⛪","🏛️","🛖","🏕️","🚪","🪟","🪑","🛏️","🛌","🚧","🧱","🌉","⚰️","🪦","🪧","🛤️","🛣️","🏟️","🏗️","🗽","🏥","⛺","🏞️"]},
-{label:"Landscape",items:["🌊","🏞️","🏔️","🏜️","🏝️","🌋","🗻","🪨","🪵","🌿","🍃","🌾","🌫️","💧","🫧","🌀","🌱","🕳️","🌲","🌳","🌴","🌵","🍂","🍀","🌷","🥀","🌻","🌼","🌸","🌹","🫙","⛲","🪣","🪺","🐚","🐾","🪸","🏕️","⛺","🌬️"]},
-{label:"Nature",items:["🌳","🌲","🌴","🌵","🌱","🌿","☘️","🍀","🍂","🍃","🌾","🪴","🌷","🌹","🥀","🌻","🌼","🌸","💐","🏔️","⛰️","🗻","🏜️","🏖️","🏝️","🌊","💧","💦","🪨","🌬️","🫧","🌀","🕳️","🪵","🐚","🪸","🌫️"]},
+  {label:"People",items:["👶","🧒","👦","👧","🧑","👨","👩","🧓","👴","👵","🤰","🤱","🦸","💂","👮","🧑‍🚒","🧙","👼","👹","👺","👻","🤖","🪆","🤴","👸","👑","👨‍⚖️","🪖","🙍","🧍","🚶","🏃","🧎","🤺","🧞","🧜","🥷","🧗"]},
+  {label:"Together",items:["👫","👬","👭","👨‍👩‍👦","👨‍👩‍👧","👨‍👩‍👧‍👦","👩‍👦","👨‍👦","👩‍👧","👨‍👧","💑","💏","🤝","🤗","🫂","❤️","💔","❤️‍🩹","❤️‍🔥","💞","💗","💘"]},
+  {label:"Animals",items:["🐶","🐱","🐭","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🦄","🐲","🐉","🦖","🦕","🐺","🐗","🐴","🦓","🦌","🦒","🐘","🦏","🐪","🦥","🐢","🐍","🦎","🦅","🦉","🐦","🦋","🐛","🐝","🦂","🦈","🐋","🐬","🐟","🐙","🪺","🥚","🐣","🐕","🐈","🐑"]},
+  {label:"Places",items:["🏠","🏡","🏚️","🏰","🏯","⛩️","🕌","⛪","🏛️","🛖","🏕️","🚪","🪟","🪑","🛏️","🛌","🚧","🧱","🌉","⚰️","🪦","🪧","🛤️","🛣️","🏟️","🏗️","🗽","🏥","⛺","🏞️"]},
+  {label:"Landscape",items:["🌊","🏞️","🏔️","🏜️","🏝️","🌋","🗻","🪨","🪵","🌿","🍃","🌾","🌫️","💧","🫧","🌀","🌱","🕳️","🌲","🌳","🌴","🌵","🍂","🍀","🌷","🥀","🌻","🌼","🌸","🌹","⛲","🪣","🪺","🐚","🐾","🪸","🌬️"]},
+  {label:"Nature",items:["🌳","🌲","🌴","🌵","🌱","🌿","☘️","🍀","🍂","🍃","🌾","🪴","🌷","🌹","🥀","🌻","🌼","🌸","💐","🏔️","⛰️","🗻","🏜️","🏖️","🏝️","🌊","💧","💦","🪨","🌬️","🫧","🌀","🕳️","🪵","🐚","🪸","🌫️"]},
   {label:"Weather",items:["☀️","🌤️","⛅","🌥️","☁️","🌧️","⛈️","🌩️","🌨️","🌪️","🌫️","🌈","🌑","🌕","🌟","⭐","💫","✨","🔥","🌋","❄️","🧊","⚡","☄️","🌬️"]},
-  {label:"Objects",items:["🔑","🗝️","🔒","🔓","🔐","⛓️","🪤","🛡️","⚔️","🗡️","🏹","🔫","💣","💥","☂️","🌂","🪞","🎭","🎈","🪅","🧩","📦","🎁","💰","💎","🕯️","🔦","🪔","📷","🖼️","✉️","📜","📖","🗺️","🧭","⏳","⚓","⛵","🚣","⛴️","🛶","🧸","🪆","🩹","🩼","🩸"]},
+  {label:"Objects",items:["🔑","🗝️","🔒","🔓","🔐","⛓️","🪤","🛡️","⚔️","🗡️","🏹","🔫","💣","💥","☂️","🌂","🪞","🎭","🎈","🪅","🧩","📦","🎁","💰","💎","🕯️","🔦","🪔","📷","🖼️","✉️","📜","📖","🗺️","🧭","⏳","⚓","⛵","🚣","⛴️","🛶","🧸","🩹","🩼","🚲"]},
   {label:"Faces & Signs",items:["😊","😢","😭","😔","😡","😰","😱","😶","🥺","😤","😌","😴","🤔","🫣","🤐","😨","😞","😟","👁️","👀","👊","✊","🙏","💭","💤","🚫","⚠️","❗","❓","🎯","🌀","♾️"]}
 ];
 
@@ -110,9 +131,9 @@ cats.forEach(cat => {
 function placeItem(emoji) {
   hint.style.display = 'none';
   itemCount++;
-  countBadge.textContent = itemCount + ' placed';
-  const x = 20 + Math.random() * 60;
-  const y = 20 + Math.random() * 60;
+  countBadge.textContent = itemCount + ' on tray';
+  const x = 25 + Math.random() * 50;
+  const y = 25 + Math.random() * 50;
   const el = document.createElement('div');
   el.className = 'placed';
   el.style.left = x + '%';
@@ -122,7 +143,13 @@ function placeItem(emoji) {
   const del = document.createElement('div');
   del.className = 'del';
   del.innerHTML = '×';
-  del.onclick = (e) => { e.stopPropagation(); el.remove(); itemCount--; countBadge.textContent = itemCount > 0 ? itemCount + ' placed' : ''; if(tray.querySelectorAll('.placed').length===0) hint.style.display='flex'; };
+  del.onclick = (e) => {
+    e.stopPropagation();
+    el.remove();
+    itemCount--;
+    countBadge.textContent = itemCount > 0 ? itemCount + ' on tray' : '';
+    if (tray.querySelectorAll('.placed').length === 0) hint.style.display = 'flex';
+  };
   el.appendChild(span);
   el.appendChild(del);
   makeDraggable(el);
@@ -132,55 +159,55 @@ function placeItem(emoji) {
 function makeDraggable(el) {
   let ox, oy, dragging = false;
   el.addEventListener('mousedown', e => {
-    if(e.target.classList.contains('del')) return;
+    if (e.target.classList.contains('del')) return;
+    if (drawMode) return;
     dragging = true;
-    const elRect = el.getBoundingClientRect();
-    ox = e.clientX - elRect.left - elRect.width/2;
-    oy = e.clientY - elRect.top - elRect.height/2;
+    const r = el.getBoundingClientRect();
+    ox = e.clientX - r.left - r.width / 2;
+    oy = e.clientY - r.top - r.height / 2;
     el.style.zIndex = 1000;
     e.preventDefault();
   });
   document.addEventListener('mousemove', e => {
-    if(!dragging) return;
-    const rect = tray.getBoundingClientRect();
-    const nx = (e.clientX - rect.left - ox) / rect.width * 100;
-    const ny = (e.clientY - rect.top - oy) / rect.height * 100;
-    el.style.left = Math.min(98, Math.max(2, nx)) + '%';
-    el.style.top = Math.min(98, Math.max(2, ny)) + '%';
+    if (!dragging) return;
+    const r = tray.getBoundingClientRect();
+    el.style.left = Math.min(96, Math.max(4, (e.clientX - r.left - ox) / r.width * 100)) + '%';
+    el.style.top = Math.min(96, Math.max(4, (e.clientY - r.top - oy) / r.height * 100)) + '%';
   });
-  document.addEventListener('mouseup', () => {
-    if(dragging){ dragging = false; el.style.zIndex = ''; }
-  });
+  document.addEventListener('mouseup', () => { if (dragging) { dragging = false; el.style.zIndex = ''; } });
   el.addEventListener('touchstart', e => {
-    if(e.target.classList.contains('del')) return;
+    if (e.target.classList.contains('del')) return;
+    if (drawMode) return;
     dragging = true;
     const t = e.touches[0];
-    const elRect = el.getBoundingClientRect();
-    ox = t.clientX - elRect.left - elRect.width/2;
-    oy = t.clientY - elRect.top - elRect.height/2;
+    const r = el.getBoundingClientRect();
+    ox = t.clientX - r.left - r.width / 2;
+    oy = t.clientY - r.top - r.height / 2;
+    el.style.zIndex = 1000;
     e.preventDefault();
-  },{passive:false});
+  }, {passive: false});
   document.addEventListener('touchmove', e => {
-    if(!dragging) return;
+    if (!dragging) return;
     const t = e.touches[0];
-    const rect = tray.getBoundingClientRect();
-    const nx = (t.clientX - rect.left - ox) / rect.width * 100;
-    const ny = (t.clientY - rect.top - oy) / rect.height * 100;
-    el.style.left = Math.min(98, Math.max(2, nx)) + '%';
-    el.style.top = Math.min(98, Math.max(2, ny)) + '%';
-  },{passive:false});
-  document.addEventListener('touchend', () => { dragging = false; });
+    const r = tray.getBoundingClientRect();
+    el.style.left = Math.min(96, Math.max(4, (t.clientX - r.left - ox) / r.width * 100)) + '%';
+    el.style.top = Math.min(96, Math.max(4, (t.clientY - r.top - oy) / r.height * 100)) + '%';
+  }, {passive: false});
+  document.addEventListener('touchend', () => { if (dragging) { dragging = false; el.style.zIndex = ''; } });
 }
 
 function clearTray() {
+  if (itemCount === 0) return;
+  if (!confirm('Clear all items from the tray?')) return;
   tray.querySelectorAll('.placed').forEach(e => e.remove());
   itemCount = 0;
   countBadge.textContent = '';
   hint.style.display = 'flex';
 }
-  const canvas = document.getElementById('draw-canvas');
+
+// ── DRAWING ──
+const canvas = document.getElementById('draw-canvas');
 const ctx = canvas.getContext('2d');
-const drawToolbar = document.getElementById('draw-toolbar');
 let isDrawing = false;
 let drawMode = false;
 let drawColor = '#3d2b1f';
@@ -189,41 +216,46 @@ let erasing = false;
 let lastX = 0, lastY = 0;
 
 function resizeCanvas() {
-  const data = ctx.getImageData(0, 0, canvas.width || 1, canvas.height || 1);
-  const rect = tray.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  try { ctx.putImageData(data, 0, 0); } catch(e) {}
+  const img = canvas.toDataURL();
+  const r = tray.getBoundingClientRect();
+  canvas.width = r.width;
+  canvas.height = r.height;
+  if (img !== 'data:,') {
+    const i = new Image();
+    i.onload = () => ctx.drawImage(i, 0, 0);
+    i.src = img;
+  }
 }
-setTimeout(resizeCanvas, 150);
+setTimeout(resizeCanvas, 100);
 window.addEventListener('resize', resizeCanvas);
 
 function toggleDrawMode() {
   drawMode = !drawMode;
-  const btn = document.getElementById('draw-toggle');
+  document.getElementById('draw-toggle').classList.toggle('active', drawMode);
+  document.getElementById('draw-toolbar').style.display = drawMode ? 'flex' : 'none';
   canvas.style.pointerEvents = drawMode ? 'all' : 'none';
-  btn.classList.toggle('active', drawMode);
-  drawToolbar.style.display = drawMode ? 'flex' : 'none';
 }
 
 function setColor(c, el) {
   drawColor = c;
   erasing = false;
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-  if(el) el.classList.add('active');
+  document.getElementById('erase-btn').classList.remove('active');
+  if (el) el.classList.add('active');
 }
 
 function setSize(s, el) {
   drawSize = s;
-  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-  if(el) el.classList.add('active');
+  document.querySelectorAll('.size-btn:not(#erase-btn)').forEach(b => {
+    if (b.textContent === 'S' || b.textContent === 'M' || b.textContent === 'L') b.classList.remove('active');
+  });
+  if (el) el.classList.add('active');
 }
-function setEraser() {
+
+function setEraser(el) {
   erasing = true;
-  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-  event.target.classList.add('active');
-}
+  document.getElementById('erase-btn').classList.add('active');
 }
 
 function clearDrawing() {
@@ -231,32 +263,30 @@ function clearDrawing() {
 }
 
 function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  if(e.touches) {
-    return [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
-  }
-  return [e.clientX - rect.left, e.clientY - rect.top];
+  const r = canvas.getBoundingClientRect();
+  if (e.touches) return [e.touches[0].clientX - r.left, e.touches[0].clientY - r.top];
+  return [e.clientX - r.left, e.clientY - r.top];
 }
 
 function startDraw(e) {
-  if(!drawMode) return;
+  if (!drawMode) return;
   isDrawing = true;
   [lastX, lastY] = getPos(e);
   e.preventDefault();
 }
 
 function draw(e) {
-  if(!isDrawing || !drawMode) return;
+  if (!isDrawing || !drawMode) return;
   e.preventDefault();
   const [x, y] = getPos(e);
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
   ctx.lineTo(x, y);
-  ctx.strokeStyle = drawColor;
+  ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+  ctx.strokeStyle = erasing ? 'rgba(0,0,0,1)' : drawColor;
   ctx.lineWidth = erasing ? drawSize * 4 : drawSize;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
   ctx.stroke();
   ctx.globalCompositeOperation = 'source-over';
   [lastX, lastY] = [x, y];
@@ -268,7 +298,9 @@ canvas.addEventListener('mousedown', startDraw);
 canvas.addEventListener('mousemove', draw);
 canvas.addEventListener('mouseup', stopDraw);
 canvas.addEventListener('mouseleave', stopDraw);
-canvas.addEventListener('touchstart', startDraw, {passive:false});
-canvas.addEventListener('touchmove', draw, {passive:false});
+canvas.addEventListener('touchstart', startDraw, {passive: false});
+canvas.addEventListener('touchmove', draw, {passive: false});
 canvas.addEventListener('touchend', stopDraw);
 </script>
+</body>
+</html>
