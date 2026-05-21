@@ -23,6 +23,16 @@ body{font-family:var(--font-sans)}
 .placed .del{display:none;position:absolute;top:-8px;right:-8px;width:16px;height:16px;background:#e24b4a;border-radius:50%;font-size:10px;color:#fff;align-items:center;justify-content:center;cursor:pointer;z-index:10}
 .placed:hover .del{display:flex}
 #count-badge{font-size:11px;color:var(--color-text-tertiary)}
+#draw-toolbar{display:none;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid #e0d8c8;background:#faf7f2;flex-wrap:wrap}
+#draw-toolbar label{font-size:12px;color:#888;margin-right:2px}
+.color-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:transform 0.1s}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.active{border-color:#555;transform:scale(1.15)}
+.size-btn{padding:4px 8px;border:1px solid #d8d2c4;border-radius:5px;background:#fff;font-size:12px;cursor:pointer;font-family:inherit}
+.size-btn.active,.size-btn:hover{background:#e8d5a3;border-color:#b8a070}
+#custom-color{width:28px;height:28px;border-radius:50%;border:2px solid #d8d2c4;cursor:pointer;padding:0;overflow:hidden}
+#draw-toggle.active{background:#e8d5a3;border-color:#b8a070;color:#5c3d1e}
+#draw-canvas{position:absolute;inset:0;border-radius:14px;z-index:2;pointer-events:none;touch-action:none}
 </style>
 
 <h2 class="sr-only">Virtual Sand Tray </h2>
@@ -32,11 +42,29 @@ body{font-family:var(--font-sans)}
     <h1>Sand Tray</h1>
     <span id="count-badge"></span>
     <button class="tool-btn" onclick="clearTray()"><i class="ti ti-trash"></i> Clear</button>
+    <button class="tool-btn" id="draw-toggle" onclick="toggleDrawMode()">✏️ Draw</button>
   </div>
   <div id="main">
     <div id="palette"></div>
     <div id="tray-wrap">
       <div id="tray">
+        <canvas id="draw-canvas"></canvas>
+<div id="draw-toolbar">
+  <label>Colour</label>
+  <div class="color-swatch active" style="background:#3d2b1f" onclick="setColor('#3d2b1f',this)" title="Dark brown"></div>
+  <div class="color-swatch" style="background:#1a5c2e" onclick="setColor('#1a5c2e',this)" title="Green"></div>
+  <div class="color-swatch" style="background:#1a3a6b" onclick="setColor('#1a3a6b',this)" title="Blue"></div>
+  <div class="color-swatch" style="background:#6b1a1a" onclick="setColor('#6b1a1a',this)" title="Red"></div>
+  <div class="color-swatch" style="background:#888" onclick="setColor('#888888',this)" title="Grey"></div>
+  <div class="color-swatch" style="background:#f5f0e0" onclick="setColor('#f5f0e0',this)" title="Light"></div>
+  <input type="color" id="custom-color" value="#3d2b1f" onchange="setColor(this.value,null)" title="Custom colour">
+  <label style="margin-left:8px">Size</label>
+  <button class="size-btn active" id="sz-s" onclick="setSize(3,this)">S</button>
+  <button class="size-btn" id="sz-m" onclick="setSize(7,this)">M</button>
+  <button class="size-btn" id="sz-l" onclick="setSize(14,this)">L</button>
+  <button class="size-btn" style="margin-left:8px" onclick="setEraser()">⌫ Erase</button>
+  <button class="size-btn" onclick="clearDrawing()">✕ Clear drawing</button>
+</div>
         <div id="tray-hint"><span>Click any item from the left to place it on the tray</span></div>
       </div>
     </div>
@@ -150,4 +178,94 @@ function clearTray() {
   countBadge.textContent = '';
   hint.style.display = 'flex';
 }
+  const canvas = document.getElementById('draw-canvas');
+const ctx = canvas.getContext('2d');
+const drawToolbar = document.getElementById('draw-toolbar');
+let isDrawing = false;
+let drawMode = false;
+let drawColor = '#3d2b1f';
+let drawSize = 3;
+let erasing = false;
+let lastX = 0, lastY = 0;
+
+function resizeCanvas() {
+  const data = ctx.getImageData(0, 0, canvas.width || 1, canvas.height || 1);
+  const rect = tray.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  try { ctx.putImageData(data, 0, 0); } catch(e) {}
+}
+setTimeout(resizeCanvas, 150);
+window.addEventListener('resize', resizeCanvas);
+
+function toggleDrawMode() {
+  drawMode = !drawMode;
+  const btn = document.getElementById('draw-toggle');
+  canvas.style.pointerEvents = drawMode ? 'all' : 'none';
+  btn.classList.toggle('active', drawMode);
+  drawToolbar.style.display = drawMode ? 'flex' : 'none';
+}
+
+function setColor(c, el) {
+  drawColor = c;
+  erasing = false;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+function setSize(s, el) {
+  drawSize = s;
+  document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+
+function setEraser() {
+  erasing = true;
+}
+
+function clearDrawing() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  if(e.touches) {
+    return [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
+  }
+  return [e.clientX - rect.left, e.clientY - rect.top];
+}
+
+function startDraw(e) {
+  if(!drawMode) return;
+  isDrawing = true;
+  [lastX, lastY] = getPos(e);
+  e.preventDefault();
+}
+
+function draw(e) {
+  if(!isDrawing || !drawMode) return;
+  e.preventDefault();
+  const [x, y] = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.strokeStyle = drawColor;
+  ctx.lineWidth = erasing ? drawSize * 4 : drawSize;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+  ctx.stroke();
+  ctx.globalCompositeOperation = 'source-over';
+  [lastX, lastY] = [x, y];
+}
+
+function stopDraw() { isDrawing = false; }
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDraw);
+canvas.addEventListener('mouseleave', stopDraw);
+canvas.addEventListener('touchstart', startDraw, {passive:false});
+canvas.addEventListener('touchmove', draw, {passive:false});
+canvas.addEventListener('touchend', stopDraw);
 </script>
